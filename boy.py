@@ -193,5 +193,13 @@ class Boy:
         else:
             if self.is_RUN() or self.is_AutoRun():
                 row = 100 if self.face_dir == 1 else 0
-            self.image.clip_draw(int(self.frame) * 100, row, 100, 100, self.x, self.y)
+            draw_size = self.FRAME_SIZE
+            if self.is_AutoRun():
+                draw_size *= self.AUTO_RUN_SCALE
+            draw_y = self.y + (draw_size - self.FRAME_SIZE) / 2
+            self.image.clip_draw(
+                int(self.frame) * self.FRAME_SIZE, row,
+                self.FRAME_SIZE, self.FRAME_SIZE,
+                self.x, draw_y, draw_size, draw_size,
+            )
 
