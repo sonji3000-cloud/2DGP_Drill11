@@ -48,7 +48,7 @@ class Boy:
             trigger='wake_up', source='SLEEP', dest='IDLE',
         )
         self.state_machine.add_transition(
-            trigger='start_running', source=['IDLE', 'SLEEP'], dest='RUN',
+            trigger='start_running', source=['IDLE', 'SLEEP', 'AutoRun'], dest='RUN',
         )
         self.state_machine.add_transition(
             trigger='stop_running', source='RUN', dest='IDLE',
@@ -97,9 +97,12 @@ class Boy:
         elif event.key in self.held_keys:
             self.held_keys.remove(event.key)
 
+        if self.is_AutoRun() and event.type == SDL_KEYUP:
+            return
+
         if self.held_keys:
             self.face_dir = 1 if self.held_keys[-1] == SDLK_RIGHT else -1
-            if self.is_IDLE() or self.is_SLEEP():
+            if self.is_IDLE() or self.is_SLEEP() or self.is_AutoRun():
                 self.start_running()
         elif self.is_RUN():
             self.stop_running()
