@@ -60,7 +60,7 @@ class Boy:
             trigger='start_auto_run', source='IDLE', dest='AutoRun',
         )
         self.state_machine.add_transition(
-            trigger='auto_run_tick', source='AutoRun', dest='IDLE',
+            trigger='finish_auto_run', source='AutoRun', dest='IDLE',
             conditions='_auto_run_timed_out',
         )
         self.state_machine.add_transition(
@@ -80,7 +80,9 @@ class Boy:
         elif self.is_RUN():
             self.run_tick(delta_time)
         elif self.is_AutoRun():
-            self.auto_run_tick(delta_time)
+            # IDLE's entry callback takes no frame-time argument.
+            if not self.finish_auto_run():
+                self.auto_run_tick(delta_time)
 
     def handle_event(self, event):
         if self.is_SLEEP() and event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
@@ -139,7 +141,7 @@ class Boy:
         elif self.x >= right:
             self.face_dir = -1
 
-    def _auto_run_timed_out(self, _delta_time):
+    def _auto_run_timed_out(self):
         return monotonic() - self.auto_run_started_at >= self.AUTO_RUN_DURATION
 
     def _auto_run_bounds(self):
