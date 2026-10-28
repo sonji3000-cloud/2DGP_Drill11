@@ -59,6 +59,13 @@ class Boy:
         self.state_machine.add_transition(
             trigger='start_auto_run', source='IDLE', dest='AutoRun',
         )
+        self.state_machine.add_transition(
+            trigger='auto_run_tick', source='AutoRun', dest='IDLE',
+            conditions='_auto_run_timed_out',
+        )
+        self.state_machine.add_transition(
+            trigger='auto_run_tick', source='AutoRun', dest=None,
+        )
         # Machine initialization does not call the initial state's on_enter.
         self._enter_idle()
         self.last_updated_at = self.idle_started_at
@@ -71,6 +78,8 @@ class Boy:
             self.idle_tick()
         elif self.is_RUN():
             self.run_tick(delta_time)
+        elif self.is_AutoRun():
+            self.auto_run_tick(delta_time)
 
     def handle_event(self, event):
         if self.is_SLEEP() and event.type == SDL_KEYDOWN and event.key == SDLK_SPACE:
@@ -115,6 +124,9 @@ class Boy:
         self.held_keys.clear()
         self.auto_run_started_at = monotonic()
         self.last_updated_at = self.auto_run_started_at
+
+    def _auto_run_timed_out(self, _delta_time):
+        return monotonic() - self.auto_run_started_at >= self.AUTO_RUN_DURATION
 
     def _update_run(self, delta_time):
         self.x += self.face_dir * self.RUN_SPEED * delta_time
