@@ -2,7 +2,7 @@ from math import pi
 from time import monotonic
 
 from pico2d import (
-    SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT, SDLK_SPACE,
+    SDL_KEYDOWN, SDL_KEYUP, SDLK_LEFT, SDLK_RIGHT, SDLK_SPACE, SDLK_a,
     get_canvas_width, load_image,
 )
 from transitions import Machine
@@ -87,6 +87,10 @@ class Boy:
             return
 
         if event.type not in (SDL_KEYDOWN, SDL_KEYUP):
+            return
+        if event.type == SDL_KEYDOWN and event.key == SDLK_a:
+            if self.is_IDLE():
+                self.start_auto_run()
             return
         if event.key not in (SDLK_LEFT, SDLK_RIGHT):
             return
