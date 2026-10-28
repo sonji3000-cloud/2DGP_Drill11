@@ -131,9 +131,41 @@ class Boy:
         self.held_keys.clear()
         self.auto_run_started_at = monotonic()
         self.last_updated_at = self.auto_run_started_at
+        left, right = self._auto_run_bounds()
+        self.x = max(left, min(right, self.x))
+        if self.x <= left:
+            self.face_dir = 1
+        elif self.x >= right:
+            self.face_dir = -1
 
     def _auto_run_timed_out(self, _delta_time):
         return monotonic() - self.auto_run_started_at >= self.AUTO_RUN_DURATION
+
+    def _auto_run_bounds(self):
+        half_width = self.FRAME_SIZE * self.AUTO_RUN_SCALE / 2
+        canvas_width = get_canvas_width()
+        left = min(half_width, canvas_width / 2)
+        right = max(left, canvas_width - half_width)
+        return left, right
+
+    def _move_auto_run(self, delta_time):
+        left, right = self._auto_run_bounds()
+        span = right - left
+        if span <= 0:
+            self.x = left
+            return
+
+        self.x = max(left, min(right, self.x))
+        offset = self.x - left
+        # Unfold the round trip so even a long frame can cross multiple edges.
+        phase = offset if self.face_dir > 0 else 2 * span - offset
+        phase = (phase + self.AUTO_RUN_SPEED * delta_time) % (2 * span)
+        if phase < span:
+            self.x = left + phase
+            self.face_dir = 1
+        else:
+            self.x = right - (phase - span)
+            self.face_dir = -1
 
     def _update_run(self, delta_time):
         self.x += self.face_dir * self.RUN_SPEED * delta_time
