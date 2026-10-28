@@ -65,6 +65,7 @@ class Boy:
         )
         self.state_machine.add_transition(
             trigger='auto_run_tick', source='AutoRun', dest=None,
+            after='_update_auto_run',
         )
         # Machine initialization does not call the initial state's on_enter.
         self._enter_idle()
@@ -172,6 +173,10 @@ class Boy:
         self.x = max(50, min(get_canvas_width() - 50, self.x))
         self.frame = (self.frame + self.RUN_ANIMATION_FPS * delta_time) % 8
 
+    def _update_auto_run(self, delta_time):
+        self._move_auto_run(delta_time)
+        self.frame = (self.frame + self.RUN_ANIMATION_FPS * delta_time) % 8
+
     def _update_idle(self):
         # Stay at the same position; only the idle animation advances.
         self.frame = (self.frame + 1) % 8
@@ -186,7 +191,7 @@ class Boy:
                 self.x, self.y - 25, 100, 100,
             )
         else:
-            if self.is_RUN():
+            if self.is_RUN() or self.is_AutoRun():
                 row = 100 if self.face_dir == 1 else 0
             self.image.clip_draw(int(self.frame) * 100, row, 100, 100, self.x, self.y)
 
