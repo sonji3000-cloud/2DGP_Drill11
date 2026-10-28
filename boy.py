@@ -12,6 +12,10 @@ class Boy:
     IDLE_TIMEOUT = 5.0
     RUN_SPEED = 200.0  # Pixels per second.
     RUN_ANIMATION_FPS = 10.0
+    FRAME_SIZE = 100
+    AUTO_RUN_SPEED = RUN_SPEED * 2
+    AUTO_RUN_SCALE = 1.5
+    AUTO_RUN_DURATION = 5.0
 
     def __init__(self):
         self.x, self.y = 400, 90
@@ -25,6 +29,7 @@ class Boy:
                 {'name': 'IDLE', 'on_enter': '_enter_idle'},
                 {'name': 'SLEEP', 'on_enter': '_enter_sleep'},
                 {'name': 'RUN', 'on_enter': '_enter_run'},
+                {'name': 'AutoRun', 'on_enter': '_enter_auto_run'},
             ],
             initial='IDLE',
             auto_transitions=False,
@@ -50,6 +55,9 @@ class Boy:
         )
         self.state_machine.add_transition(
             trigger='run_tick', source='RUN', dest=None, after='_update_run',
+        )
+        self.state_machine.add_transition(
+            trigger='start_auto_run', source='IDLE', dest='AutoRun',
         )
         # Machine initialization does not call the initial state's on_enter.
         self._enter_idle()
@@ -101,6 +109,12 @@ class Boy:
     def _enter_run(self):
         self.frame = 0
         self.last_updated_at = monotonic()
+
+    def _enter_auto_run(self):
+        self.frame = 0
+        self.held_keys.clear()
+        self.auto_run_started_at = monotonic()
+        self.last_updated_at = self.auto_run_started_at
 
     def _update_run(self, delta_time):
         self.x += self.face_dir * self.RUN_SPEED * delta_time
